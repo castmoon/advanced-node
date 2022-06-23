@@ -9,12 +9,12 @@
         "sourceMap": true,
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
-        "strict": true,
         "baseUrl": "src",
         "paths": {
             "@/*": ["*"],
             "@/tests/*": ["../tests/*"]
-        }
+        },
+        "strict": true,
     },
     "include": ["src"]
 }
