@@ -6,8 +6,7 @@ import { AuthenticationError } from '@/domain/errors';
 describe('Facebook authentication service', () => {
   let sut: FacebookAuthenticationService;
   let loadFacebookApi: LoadFacebookUserApi;
-  let loadUserAccountRepo: LoadUserAccountRepository;
-  let createFacebookAccountRepo: CreateFacebookAccountRepository;
+  let userAccontRepo: LoadUserAccountRepository & CreateFacebookAccountRepository;
   const token = 'any_token';
   const fbResponse = {
     name: 'any_fb_name',
@@ -18,16 +17,14 @@ describe('Facebook authentication service', () => {
     loadFacebookApi = {
       loadUserBy: jest.fn()
     };
-    loadUserAccountRepo = {
-      load: jest.fn()
-    };
-    createFacebookAccountRepo = {
+    userAccontRepo = {
+      load: jest.fn(),
       createFromFacebook: jest.fn()
     };
+
     sut = new FacebookAuthenticationService(
       loadFacebookApi,
-      loadUserAccountRepo,
-      createFacebookAccountRepo
+      userAccontRepo
     );
   });
 
@@ -51,18 +48,18 @@ describe('Facebook authentication service', () => {
 
     await sut.perform({ token });
 
-    expect(loadUserAccountRepo.load).toHaveBeenCalledWith({ email: 'any_fb_email' });
-    expect(loadUserAccountRepo.load).toHaveBeenCalledTimes(1);
+    expect(userAccontRepo.load).toHaveBeenCalledWith({ email: 'any_fb_email' });
+    expect(userAccontRepo.load).toHaveBeenCalledTimes(1);
   });
 
   test('should call CreateUserAccountRepo when LoadFacebookUserApi returns undefined', async () => {
     loadFacebookApi.loadUserBy = async () => (fbResponse);
 
-    loadUserAccountRepo.load = async () => undefined;
+    userAccontRepo.load = async () => undefined;
 
     await sut.perform({ token });
 
-    expect(createFacebookAccountRepo.createFromFacebook).toHaveBeenCalledWith(fbResponse);
-    expect(createFacebookAccountRepo.createFromFacebook).toHaveBeenCalledTimes(1);
+    expect(userAccontRepo.createFromFacebook).toHaveBeenCalledWith(fbResponse);
+    expect(userAccontRepo.createFromFacebook).toHaveBeenCalledTimes(1);
   });
 });
