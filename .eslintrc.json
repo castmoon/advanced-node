@@ -6,6 +6,8 @@
   "rules": {
     "semi": ["error", "always"],
     "@typescript-eslint/semi": "off",
-    "parserOptions": "off"
+    "parserOptions": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/no-namespace": "off"
   }
 }
