@@ -1,5 +1,5 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
-import { LoadUserAccountRepository } from '@/data/contracts/repos';
+import { CreateFacebookAccountRepository, LoadUserAccountRepository } from '@/data/contracts/repos';
 import { FacebookAuthenticationService } from '@/data/services/';
 import { AuthenticationError } from '@/domain/errors';
 
@@ -7,7 +7,13 @@ describe('Facebook authentication service', () => {
   let sut: FacebookAuthenticationService;
   let loadFacebookApi: LoadFacebookUserApi;
   let loadUserAccountRepo: LoadUserAccountRepository;
+  let createFacebookAccountRepo: CreateFacebookAccountRepository;
   const token = 'any_token';
+  const fbResponse = {
+    name: 'any_fb_name',
+    email: 'any_fb_email',
+    facebookID: 'any_fb_facebook_id'
+  };
   beforeEach(() => {
     loadFacebookApi = {
       loadUserBy: jest.fn()
@@ -15,9 +21,13 @@ describe('Facebook authentication service', () => {
     loadUserAccountRepo = {
       load: jest.fn()
     };
+    createFacebookAccountRepo = {
+      createFromFacebook: jest.fn()
+    };
     sut = new FacebookAuthenticationService(
       loadFacebookApi,
-      loadUserAccountRepo
+      loadUserAccountRepo,
+      createFacebookAccountRepo
     );
   });
 
@@ -37,15 +47,22 @@ describe('Facebook authentication service', () => {
   });
 
   test('should call LoadUserAccountRepo when LoadFacebookUserApi returns data', async () => {
-    loadFacebookApi.loadUserBy = async () => ({
-      name: 'any_fb_name',
-      email: 'any_fb_email',
-      facebookID: 'any_fb_facebook_id'
-    });
+    loadFacebookApi.loadUserBy = async () => (fbResponse);
 
     await sut.perform({ token });
 
     expect(loadUserAccountRepo.load).toHaveBeenCalledWith({ email: 'any_fb_email' });
     expect(loadUserAccountRepo.load).toHaveBeenCalledTimes(1);
+  });
+
+  test('should call CreateUserAccountRepo when LoadFacebookUserApi returns undefined', async () => {
+    loadFacebookApi.loadUserBy = async () => (fbResponse);
+
+    loadUserAccountRepo.load = async () => undefined;
+
+    await sut.perform({ token });
+
+    expect(createFacebookAccountRepo.createFromFacebook).toHaveBeenCalledWith(fbResponse);
+    expect(createFacebookAccountRepo.createFromFacebook).toHaveBeenCalledTimes(1);
   });
 });
