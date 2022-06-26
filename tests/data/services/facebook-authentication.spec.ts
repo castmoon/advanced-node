@@ -1,12 +1,12 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
-import { CreateFacebookAccountRepository, LoadUserAccountRepository, UpdateFacebookAccountRepository } from '@/data/contracts/repos';
+import { LoadUserAccountRepository, SaveFacebookAccountRepository } from '@/data/contracts/repos';
 import { FacebookAuthenticationService } from '@/data/services/';
 import { AuthenticationError } from '@/domain/errors';
 
 describe('Facebook authentication service', () => {
   let sut: FacebookAuthenticationService;
   let loadFacebookApi: LoadFacebookUserApi;
-  let userAccontRepo: LoadUserAccountRepository & CreateFacebookAccountRepository & UpdateFacebookAccountRepository;
+  let userAccontRepo: LoadUserAccountRepository & SaveFacebookAccountRepository;
   const token = 'any_token';
   const fbResponse = {
     name: 'any_fb_name',
@@ -19,8 +19,7 @@ describe('Facebook authentication service', () => {
     };
     userAccontRepo = {
       load: jest.fn(),
-      createFromFacebook: jest.fn(),
-      updateWithFacebook: jest.fn()
+      saveWithFacebook: jest.fn()
     };
 
     sut = new FacebookAuthenticationService(
@@ -53,18 +52,18 @@ describe('Facebook authentication service', () => {
     expect(userAccontRepo.load).toHaveBeenCalledTimes(1);
   });
 
-  test('should call CreateFacebookAccountRepo when LoadFacebookUserApi returns undefined', async () => {
+  test('should create account with facebook data', async () => {
     loadFacebookApi.loadUserBy = async () => (fbResponse);
 
     userAccontRepo.load = async () => undefined;
 
     await sut.perform({ token });
 
-    expect(userAccontRepo.createFromFacebook).toHaveBeenCalledWith(fbResponse);
-    expect(userAccontRepo.createFromFacebook).toHaveBeenCalledTimes(1);
+    expect(userAccontRepo.saveWithFacebook).toHaveBeenCalledWith(fbResponse);
+    expect(userAccontRepo.saveWithFacebook).toHaveBeenCalledTimes(1);
   });
 
-  test('should call UpdateFacebookAccountRepo when LoadFacebookUserApi returns undefined', async () => {
+  test('should not update account name', async () => {
     loadFacebookApi.loadUserBy = async () => (fbResponse);
 
     userAccontRepo.load = async () => ({
@@ -74,12 +73,13 @@ describe('Facebook authentication service', () => {
 
     await sut.perform({ token });
 
-    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledWith({
+    expect(userAccontRepo.saveWithFacebook).toHaveBeenCalledWith({
       id: 'any_id',
       name: 'any_name',
-      facebookID: 'any_facebook_id'
+      facebookID: 'any_facebook_id',
+      email: 'any_fb_email'
     });
-    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledTimes(1);
+    expect(userAccontRepo.saveWithFacebook).toHaveBeenCalledTimes(1);
   });
 
   test('should update account name', async () => {
@@ -91,11 +91,12 @@ describe('Facebook authentication service', () => {
 
     await sut.perform({ token });
 
-    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledWith({
+    expect(userAccontRepo.saveWithFacebook).toHaveBeenCalledWith({
       id: 'any_id',
       name: 'any_fb_name',
-      facebookID: 'any_facebook_id'
+      facebookID: 'any_facebook_id',
+      email: 'any_fb_email'
     });
-    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledTimes(1);
+    expect(userAccontRepo.saveWithFacebook).toHaveBeenCalledTimes(1);
   });
 });
