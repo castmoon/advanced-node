@@ -1,17 +1,17 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
-import { CreateFacebookAccountRepository, LoadUserAccountRepository } from '@/data/contracts/repos';
+import { CreateFacebookAccountRepository, LoadUserAccountRepository, UpdateFacebookAccountRepository } from '@/data/contracts/repos';
 import { FacebookAuthenticationService } from '@/data/services/';
 import { AuthenticationError } from '@/domain/errors';
 
 describe('Facebook authentication service', () => {
   let sut: FacebookAuthenticationService;
   let loadFacebookApi: LoadFacebookUserApi;
-  let userAccontRepo: LoadUserAccountRepository & CreateFacebookAccountRepository;
+  let userAccontRepo: LoadUserAccountRepository & CreateFacebookAccountRepository & UpdateFacebookAccountRepository;
   const token = 'any_token';
   const fbResponse = {
     name: 'any_fb_name',
     email: 'any_fb_email',
-    facebookID: 'any_fb_facebook_id'
+    facebookID: 'any_facebook_id'
   };
   beforeEach(() => {
     loadFacebookApi = {
@@ -19,7 +19,8 @@ describe('Facebook authentication service', () => {
     };
     userAccontRepo = {
       load: jest.fn(),
-      createFromFacebook: jest.fn()
+      createFromFacebook: jest.fn(),
+      updateWithFacebook: jest.fn()
     };
 
     sut = new FacebookAuthenticationService(
@@ -52,7 +53,7 @@ describe('Facebook authentication service', () => {
     expect(userAccontRepo.load).toHaveBeenCalledTimes(1);
   });
 
-  test('should call CreateUserAccountRepo when LoadFacebookUserApi returns undefined', async () => {
+  test('should call CreateFacebookAccountRepo when LoadFacebookUserApi returns undefined', async () => {
     loadFacebookApi.loadUserBy = async () => (fbResponse);
 
     userAccontRepo.load = async () => undefined;
@@ -61,5 +62,23 @@ describe('Facebook authentication service', () => {
 
     expect(userAccontRepo.createFromFacebook).toHaveBeenCalledWith(fbResponse);
     expect(userAccontRepo.createFromFacebook).toHaveBeenCalledTimes(1);
+  });
+
+  test('should call UpdateFacebookAccountRepo when LoadFacebookUserApi returns undefined', async () => {
+    loadFacebookApi.loadUserBy = async () => (fbResponse);
+
+    userAccontRepo.load = async () => ({
+      id: 'any_id',
+      name: 'any_name'
+    });
+
+    await sut.perform({ token });
+
+    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledWith({
+      id: 'any_id',
+      name: 'any_name',
+      facebookID: 'any_facebook_id'
+    });
+    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledTimes(1);
   });
 });
