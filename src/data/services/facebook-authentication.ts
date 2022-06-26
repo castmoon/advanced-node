@@ -23,7 +23,7 @@ export class FacebookAuthenticationService implements FacebookAuthentication {
     await this.userAccountRepo.updateWithFacebook({
       facebookID: facebookData.facebookID,
       id: accountData?.id as string,
-      name: accountData?.name
+      name: accountData?.name ?? facebookData.name
     });
     return {
       accessToken: ''

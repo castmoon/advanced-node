@@ -81,4 +81,21 @@ describe('Facebook authentication service', () => {
     });
     expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledTimes(1);
   });
+
+  test('should update account name', async () => {
+    loadFacebookApi.loadUserBy = async () => (fbResponse);
+
+    userAccontRepo.load = async () => ({
+      id: 'any_id'
+    });
+
+    await sut.perform({ token });
+
+    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledWith({
+      id: 'any_id',
+      name: 'any_fb_name',
+      facebookID: 'any_facebook_id'
+    });
+    expect(userAccontRepo.updateWithFacebook).toHaveBeenCalledTimes(1);
+  });
 });
