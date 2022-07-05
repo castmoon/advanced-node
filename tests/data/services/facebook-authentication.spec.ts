@@ -1,5 +1,8 @@
 import { LoadFacebookUserApi } from '@/data/contracts/apis';
-import { LoadUserAccountRepository, SaveFacebookAccountRepository } from '@/data/contracts/repos';
+import {
+  LoadUserAccountRepository,
+  SaveFacebookAccountRepository
+} from '@/data/contracts/repos';
 import { FacebookAuthenticationService } from '@/data/services/';
 import { AuthenticationError } from '@/domain/errors';
 
@@ -22,10 +25,7 @@ describe('Facebook authentication service', () => {
       saveWithFacebook: jest.fn()
     };
 
-    sut = new FacebookAuthenticationService(
-      loadFacebookApi,
-      userAccontRepo
-    );
+    sut = new FacebookAuthenticationService(loadFacebookApi, userAccontRepo);
   });
 
   test('should call LoadFacebookUserApi with correct params', async () => {
@@ -44,7 +44,7 @@ describe('Facebook authentication service', () => {
   });
 
   test('should call LoadUserAccountRepo when LoadFacebookUserApi returns data', async () => {
-    loadFacebookApi.loadUserBy = async () => (fbResponse);
+    loadFacebookApi.loadUserBy = async () => fbResponse;
 
     await sut.perform({ token });
 
@@ -53,7 +53,7 @@ describe('Facebook authentication service', () => {
   });
 
   test('should create account with facebook data', async () => {
-    loadFacebookApi.loadUserBy = async () => (fbResponse);
+    loadFacebookApi.loadUserBy = async () => fbResponse;
 
     userAccontRepo.load = async () => undefined;
 
@@ -64,7 +64,7 @@ describe('Facebook authentication service', () => {
   });
 
   test('should not update account name', async () => {
-    loadFacebookApi.loadUserBy = async () => (fbResponse);
+    loadFacebookApi.loadUserBy = async () => fbResponse;
 
     userAccontRepo.load = async () => ({
       id: 'any_id',
@@ -83,7 +83,7 @@ describe('Facebook authentication service', () => {
   });
 
   test('should update account name', async () => {
-    loadFacebookApi.loadUserBy = async () => (fbResponse);
+    loadFacebookApi.loadUserBy = async () => fbResponse;
 
     userAccontRepo.load = async () => ({
       id: 'any_id'
